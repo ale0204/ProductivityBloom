@@ -1,389 +1,510 @@
-# 🌱 Productivity Bloom - Smart Productivity Cube
+# Productivity Bloom
 
-Un cub inteligent de productivitate bazat pe ESP32, care folosește gamification pentru a transforma sesiunile de focus într-o experiență interactivă. Planta virtuală crește pe măsură ce îți completezi task-urile!
+## A Smart Embedded System for Focus Session Management
 
-![ESP32](https://img.shields.io/badge/ESP32-WROOM--32-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Platform](https://img.shields.io/badge/platform-Arduino-orange)
+Productivity Bloom is a physical smart cube built around an ESP32 microcontroller that transforms focus sessions into an interactive, gamified experience. The system combines hardware sensors (accelerometer, light sensor), a grayscale OLED display, audio feedback, and a real-time web interface to create a tangible productivity tool that responds to physical gestures.
 
----
+Unlike traditional software-based Pomodoro timers, this project embodies the concept of "calm technology" - technology that exists in the physical world, requires minimal attention, and provides ambient feedback. The user interacts with the system by physically flipping the cube to start/stop focus sessions, while a virtual plant grows on the display as tasks are completed, creating an emotional connection to productivity habits.
 
-## 📋 Cuprins
-
-- [Descriere](#-descriere)
-- [Funcționalități](#-funcționalități)
-- [Bill of Materials (BOM)](#-bill-of-materials-bom)
-- [Schema Electrică](#-schema-electrică)
-- [Provocări Tehnice](#-provocări-tehnice)
-- [Structura Codului](#-structura-codului)
-- [Instalare și Configurare](#-instalare-și-configurare)
-- [Utilizare](#-utilizare)
-- [API Documentation](#-api-documentation)
+The system operates as a standalone embedded device with its own web server, eliminating dependency on external services or internet connectivity for core functionality. Time synchronization via NTP ensures accurate daily goal tracking, with automatic midnight resets and persistent storage of statistics across power cycles.
 
 ---
 
-## 📖 Descriere
+## Table of Contents
 
-**Productivity Bloom** este un cub fizic inteligent care te ajută să te concentrezi pe task-uri folosind tehnica Pomodoro, combinată cu gamification. 
-
-### Conceptul
-- Adaugi task-uri prin interfața web de pe telefon
-- Selectezi un task și întorci cubul pentru a porni timer-ul
-- În timp ce te concentrezi, o plantă virtuală crește pe display-ul OLED
-- Dacă completezi toate task-urile zilnice, planta înflorește! 🌸
-- Dacă nu îți atingi obiectivele, planta se ofilește... dar o poți reînvia cu lumină! 💡
-
----
-
-## ✨ Funcționalități
-
-### 🎮 Control prin Flip (MPU-6050)
-- **Întoarce cubul** pentru a porni/opri timer-ul
-- **OLED în jos** = Focus mode (timer-ul merge)
-- **OLED în sus** = Pauză (timer-ul se oprește)
-- Display-ul se rotește automat 180° pentru a fi citibil din ambele poziții
-
-### 🌱 Sistem de Plantă Gamificat
-- **4 stadii de creștere**: Sămânță → Lăstar → Creștere → Înflorit
-- Planta crește cu fiecare task completat
-- La miezul nopții se verifică obiectivele zilnice
-- **Obiective îndeplinite** = Planta rămâne înflorită
-- **Obiective ratate** = Planta se ofilește
-
-### 💡 Revive cu Lumină (LDR Sensor)
-- Planta ofilită poate fi reînviată expunând-o la lumină
-- Senzorul LDR detectează lumina timp de 3 secunde
-- Animație specială de "Revive!" pe OLED și web
-
-### 🔊 Feedback Audio (Piezo Buzzer)
-- **Countdown 3-2-1**: Beep-uri melodice înainte de terminarea timer-ului
-- Sunetele sunt "cute" și non-intruzive
-
-### 📱 Interfață Web Responsivă
-- Funcționează pe orice dispozitiv (telefon, tablet, PC)
-- **WebSocket** pentru actualizări în timp real
-- Adaugă, editează și șterge task-uri
-- Vezi statistici zilnice (timp focusat, task-uri completate)
-- Control manual: Start, Pauză, Skip Break
-- Demo mode pentru testare
-
-### ⏰ Sincronizare NTP
-- Ora se sincronizează automat de pe internet
-- Fusul orar România (UTC+2 / UTC+3 DST)
-- Reset automat la miezul nopții
-
-### 📊 Analytics & Statistici
-- Timp total focusat pe zi
-- Număr de task-uri completate
-- Număr de sesiuni de pauză
-- Persistență în NVS (Non-Volatile Storage)
+1. [System Overview](#system-overview)
+2. [Features](#features)
+3. [Hardware Components](#hardware-components)
+4. [Electrical Schematic](#electrical-schematic)
+5. [Software Architecture](#software-architecture)
+6. [Installation](#installation)
+7. [Usage Guide](#usage-guide)
+8. [API Reference](#api-reference)
+9. [Technical Challenges](#technical-challenges)
+10. [Design Questions](#design-questions)
 
 ---
 
-## 🛒 Bill of Materials (BOM)
+## System Overview
 
-| Componentă | Cantitate | Specificații | Notă |
-|------------|-----------|--------------|------|
-| **ESP32 WROOM-32** | 1 | DevKit V1, 38 pini | Microcontroller principal |
-| **OLED Display** | 1 | Waveshare 1.5" SSD1327, 128x128px, SPI | Display grayscale |
-| **MPU-6050** | 1 | Accelerometru + Giroscop 6-DOF, I2C | Detectare flip |
-| **LDR (Fotorezistor)** | 1 | GL5528 sau similar | Detectare lumină |
-| **Piezo Buzzer** | 1 | Pasiv, 5V | Feedback audio |
-| **Rezistor 10kΩ** | 1 | 1/4W | Pull-down pentru LDR |
-| **Rezistor 220Ω** | 1 | 1/4W | Limitare curent buzzer |
-| **Baterii Li-Ion 18650** | 2 | 3.7V, 2000-3000mAh | **Conectate în PARALEL** |
-| **Suport baterii 18650** | 1 | 2 sloturi, paralel | Pentru baterii |
-| **Modul TP4056** | 1 | Cu protecție, Micro-USB | Încărcare baterii |
-| **Cub transparent/translucid** | 1 | ~10cm latură | Carcasă |
-| **Fire Dupont** | ~20 | M-F și M-M | Conexiuni |
-| **Breadboard mini** | 1 | 170 puncte | Opțional, pentru montaj |
+The Productivity Bloom cube serves as a physical interface for the Pomodoro technique, enhanced with gamification elements. The core interaction model is:
 
-### ⚡ Notă despre Baterii
-Am folosit **2 baterii Li-Ion 18650 de 3.7V conectate în PARALEL** pentru a obține:
-- Tensiune: 3.7V (compatibilă cu ESP32 prin pinul VIN)
-- Capacitate dublă: ~4000-6000mAh
-- Autonomie: ~8-12 ore de funcționare continuă
+1. **Task Creation**: Users add tasks via a mobile-responsive web interface served directly from the ESP32
+2. **Task Selection**: Selecting a task on the web interface marks it as "ready to start"
+3. **Focus Initiation**: Physically flipping the cube (OLED facing down) starts the focus timer
+4. **Focus Session**: Timer counts down on both OLED and web interface; the virtual plant grows
+5. **Session End**: Audio countdown at 3-2-1 seconds; flipping cube back triggers completion dialog
+6. **Break Period**: Optional break timer with automatic transition
+7. **Daily Goals**: At midnight, the system evaluates if daily goals were met; plant withers or blooms accordingly
+8. **Recovery Mechanism**: Withered plants can be revived by exposing the light sensor to bright light
+
+The system maintains state across power cycles using the ESP32's Non-Volatile Storage (NVS), ensuring that tasks, plant state, and statistics persist.
 
 ---
 
-## 🔌 Schema Electrică
+## Features
 
-### Conexiuni Pin ESP32
+### Physical Interaction
+- **Flip-based Control**: MPU-6050 accelerometer detects cube orientation; flipping initiates or pauses timers
+- **Automatic Display Rotation**: OLED content rotates 180 degrees based on cube orientation for readability
+- **Light-based Revival**: LDR sensor enables plant revival through 3-second light exposure
+
+### Visual Feedback
+- **128x128 Grayscale OLED**: Displays timer, plant growth stages, and status information
+- **4-Stage Plant Growth**: Seed, Sprout, Growing, Bloomed - visual progress tied to task completion
+- **QR Code Display**: In Access Point mode, displays QR code for easy connection
+
+### Audio Feedback
+- **Countdown Beeps**: Melodic warnings at 3, 2, 1 seconds before timer completion
+- **Passive Buzzer**: PWM-driven for frequency control
+
+### Web Interface
+- **Real-time Updates**: WebSocket connection provides instant synchronization
+- **Mobile-first Design**: Responsive CSS optimized for smartphone use
+- **Task Management**: Add, edit, delete tasks with customizable durations
+- **Statistics Dashboard**: Daily focus time, tasks completed, session history
+
+### Network Capabilities
+- **Dual-mode WiFi**: Station mode for home network; Access Point fallback with captive portal
+- **NTP Synchronization**: Automatic time sync for accurate midnight resets
+- **RESTful API**: Full HTTP API for integration possibilities
+
+### Data Persistence
+- **NVS Storage**: Plant state, statistics, and configuration survive power cycles
+- **Task Persistence**: Active tasks maintained across restarts
+- **Analytics History**: Daily statistics with proper session recording
+
+---
+
+## Hardware Components
+
+### Bill of Materials
+
+| Component | Quantity | Specifications | Purpose |
+|-----------|----------|----------------|---------|
+| ESP32 WROOM-32 | 1 | DevKit V1, 38 pins | Main microcontroller |
+| OLED Display | 1 | Waveshare 1.5", SSD1327, 128x128, SPI | Visual output |
+| MPU-6050 | 1 | 6-DOF Accelerometer/Gyroscope, I2C | Flip detection |
+| LDR Photoresistor | 1 | GL5528 or equivalent | Light detection |
+| Piezo Buzzer | 1 | Passive, 5V rated | Audio feedback |
+| Resistor 10k Ohm | 1 | 1/4W | LDR voltage divider |
+| Resistor 220 Ohm | 1 | 1/4W | Buzzer current limiting |
+| Li-Ion 18650 Battery | 2 | 3.7V, 2000-3000mAh each | Power supply |
+| Battery Holder | 1 | 2-slot, parallel configuration | Battery mounting |
+| TP4056 Module | 1 | With protection circuit | Battery charging |
+| Enclosure | 1 | Cube form factor, approx. 10cm | Housing |
+| Dupont Wires | ~20 | Male-Female and Male-Male | Connections |
+
+### Power Configuration
+
+The system uses two 18650 Li-Ion batteries connected in parallel:
+- Output Voltage: 3.7V nominal (compatible with ESP32 VIN)
+- Combined Capacity: 4000-6000mAh
+- Runtime: Approximately 8-12 hours continuous operation
+- Charging: Via TP4056 module with micro-USB input
+
+---
+
+## Electrical Schematic
+
+### Pin Connections
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    ESP32 WROOM-32                    │
-├─────────────────────────────────────────────────────┤
-│                                                      │
-│  OLED SSD1327 (SPI):                                │
-│    VCC  ────────── 3.3V                             │
-│    GND  ────────── GND                              │
-│    DIN  ────────── GPIO23 (MOSI)                    │
-│    CLK  ────────── GPIO18 (SCLK)                    │
-│    CS   ────────── GPIO5                            │
-│    DC   ────────── GPIO16                           │
-│    RST  ────────── GPIO4                            │
-│                                                      │
-│  MPU-6050 (I2C):                                    │
-│    VCC  ────────── 3.3V                             │
-│    GND  ────────── GND                              │
-│    SDA  ────────── GPIO21                           │
-│    SCL  ────────── GPIO22                           │
-│                                                      │
-│  LDR (Voltage Divider):                             │
-│    LDR  ────────── 3.3V                             │
-│    LDR  ────┬───── GPIO34 (ADC)                     │
-│             │                                        │
-│    10kΩ ────┴───── GND                              │
-│                                                      │
-│  Piezo Buzzer:                                      │
-│    GPIO25 ──[220Ω]── Buzzer (+)                     │
-│    GND  ────────── Buzzer (-)                       │
-│                                                      │
-│  Alimentare (Baterii):                              │
-│    Baterii 3.7V (paralel) ─── TP4056 ─── VIN + GND │
-│                                                      │
-└─────────────────────────────────────────────────────┘
+ESP32 WROOM-32 Pin Assignments
+===============================
+
+OLED Display (SPI):
+  VCC  --> 3.3V
+  GND  --> GND
+  DIN  --> GPIO23 (MOSI)
+  CLK  --> GPIO18 (SCLK)
+  CS   --> GPIO5
+  DC   --> GPIO16
+  RST  --> GPIO4
+
+MPU-6050 (I2C):
+  VCC  --> 3.3V
+  GND  --> GND
+  SDA  --> GPIO21
+  SCL  --> GPIO22
+
+LDR Circuit (Voltage Divider):
+  LDR  --> 3.3V
+  LDR  --+--> GPIO34 (ADC input)
+         |
+  10k   -+--> GND
+
+Piezo Buzzer:
+  GPIO25 --[220 Ohm]--> Buzzer (+)
+  GND                --> Buzzer (-)
+
+Power:
+  Battery Pack (+) --> TP4056 B+ --> ESP32 VIN
+  Battery Pack (-) --> TP4056 B- --> ESP32 GND
 ```
 
-### Diagramă Baterii Paralel
+### Battery Parallel Configuration
 
 ```
-    ┌─────────────┐     ┌─────────────┐
-    │  Baterie 1  │     │  Baterie 2  │
-    │    3.7V     │     │    3.7V     │
-    │  18650      │     │  18650      │
-    └──────┬──────┘     └──────┬──────┘
-           │ (+)               │ (+)
-           └─────────┬─────────┘
-                     │
-                     ▼
-              ┌──────────────┐
-              │   TP4056     │
-              │  (Charger)   │
-              └──────┬───────┘
-                     │
-                     ▼
-              ┌──────────────┐
-              │  ESP32 VIN   │
-              └──────────────┘
+  +--------+     +--------+
+  | Cell 1 |     | Cell 2 |
+  | 3.7V   |     | 3.7V   |
+  +---+----+     +----+---+
+      |    (+)       |
+      +------+-------+
+             |
+             v
+      +------+------+
+      |   TP4056    |
+      |  Charger    |
+      +------+------+
+             |
+             v
+      +------+------+
+      |  ESP32 VIN  |
+      +-------------+
 ```
 
 ---
 
-## 🔧 Provocări Tehnice
+## Software Architecture
 
-### 1. Sincronizarea Web ↔ ESP32
-Una dintre cele mai dificile provocări a fost **sincronizarea în timp real** între interfața web și ESP32:
+### Project Structure
 
-- **WebSocket bidirectional**: Am implementat comunicare în timp real folosind WebSockets. Fiecare acțiune din web (adaugă task, start timer) se reflectă instant pe OLED și invers.
-- **Race conditions**: Când mai mulți clienți se conectează simultan, trebuie gestionate corect actualizările de stare.
-- **Reconnect logic**: Dacă conexiunea WebSocket cade, clientul web încearcă automat reconectarea.
+```
+FinalProject/
+|-- README.md
+|-- src/
+    |-- finall.ino              # Main entry point
+    |-- config.h                # Configuration constants
+    |
+    |-- SystemState.h           # Global state management
+    |-- EventQueue.h            # Thread-safe event queue
+    |
+    |-- WebServerHandler.h      # HTTP server + WebSocket
+    |-- MultiCoreWebServer.h    # Dual-core wrapper
+    |-- WebContent.h            # Compiled HTML/CSS/JS
+    |
+    |-- DisplayRenderer.h       # OLED drawing functions
+    |-- QRCodeGenerator.h       # QR code generation
+    |
+    |-- MPU6050Handler.h        # Accelerometer driver
+    |-- BuzzerHandler.h         # Audio output control
+    |-- Analytics.h             # Statistics and NTP
+    |
+    |-- IntervalTimer.h         # Non-blocking timers
+    |-- TimedScreenManager.h    # Overlay management
+    |
+    |-- build_webcontent.py     # Web asset compiler
+    |
+    |-- data/
+        |-- index.html          # Web interface structure
+        |-- style.css           # Styles (mobile-first)
+        |-- app.js              # Client-side logic
+```
 
-### 2. Probleme cu WiFi-ul ESP32
-ESP32-ul are particularități cu WiFi-ul care au cauzat multe bătăi de cap:
+### Dual-Core Architecture
 
-- **Dual-core conflicts**: WebSocket-ul rulează pe Core 0, iar logica principală pe Core 1. A fost necesar să folosesc `mutex` și `volatile` pentru variabilele partajate.
-- **Memory fragmentation**: După multe conexiuni/deconectări, heap-ul se fragmenta. Am optimizat folosind buffere statice.
-- **Access Point fallback**: Dacă WiFi-ul configurat nu e disponibil, ESP32-ul creează propriul Access Point cu QR code pe OLED.
+The ESP32's dual-core capability is leveraged for responsive operation:
 
-### 3. Partea Fizică - Construcția Cubului
-Cea mai mare provocare non-software a fost **integrarea fizică**:
+- **Core 0**: WebSocket server, HTTP request handling, WiFi management
+- **Core 1**: Main application loop, sensor reading, display updates, timer logic
 
-- **Toate componentele în cub**: Baterii, ESP32, OLED, MPU-6050, LDR, buzzer - totul trebuia să încapă într-un cub de ~10cm.
-- **Bateria în centru de greutate**: Pentru ca flip-ul să funcționeze corect, bateriile (cele mai grele) trebuiau poziționate central.
-- **Fixarea componentelor**: Am folosit bandă dublu-adezivă, hot glue și suporturi printate 3D pentru a ține totul fix când cubul se întoarce.
-- **Gestionarea firelor**: Cu atâtea conexiuni, firele deveneau un haos. Am folosit fire scurte și organizare pe niveluri.
-- **Accesul la port USB**: TP4056 și ESP32 trebuiau poziționate pentru acces ușor la încărcare/programare.
+Inter-core communication is handled through a thread-safe event queue with proper mutex protection for shared state variables.
 
-### 4. Rotirea Display-ului
-OLED-ul trebuia să fie citibil indiferent de orientarea cubului:
+### Event-Driven Design
 
-- Am încercat `setDisplayRotation()` la runtime, dar nu funcționa consistent pentru SSD1327.
-- Soluția finală: rotația se setează în **constructor** (`U8G2_R2`) și se schimbă dinamic când MPU-ul detectează flip.
+```
++-------------+     +-------------+     +-------------+
+|   Sensors   |---->| EventQueue  |---->|   Handler   |
+| MPU, LDR    |     |   (FIFO)    |     |   loop()    |
++-------------+     +-------------+     +-------------+
+                          ^
+                          |
+                    +-----+-----+
+                    | WebSocket |
+                    |  Core 0   |
+                    +-----------+
+```
 
-### 5. Persistența Datelor
-Task-urile și starea plantei trebuiau să supraviețuiască restart-ului:
-
-- Am folosit **NVS (Non-Volatile Storage)** pentru starea plantei și statistici.
-- Task-urile se salvează în format binar optimizat.
-- La miezul nopții se face reset automat cu backup al statisticilor.
+Events include: TIMER_TICK, STATE_CHANGED, PLANT_WATERED, PLANT_BLOOMED, PLANT_WITHERED, PLANT_REVIVED, FLIP_CONFIRM_NEEDED, FLIP_RESUMED, WEB_BROADCAST
 
 ---
 
-## 📁 Structura Codului
+## Installation
 
-```
-productivity-bloom/
-├── finall.ino              # Entry point, setup() și loop()
-├── config.h                # Configurări WiFi, pini, constante
-│
-├── SystemState.h           # Starea globală: moduri, task-uri, plantă
-├── EventQueue.h            # Coadă de evenimente thread-safe
-│
-├── WebServerHandler.h      # Server HTTP + WebSocket
-├── MultiCoreWebServer.h    # Wrapper dual-core pentru server
-├── WebContent.h            # HTML/CSS/JS compilat (generat automat)
-│
-├── DisplayRenderer.h       # Toate funcțiile de desenare OLED
-├── QRCodeGenerator.h       # Generare QR code pentru AP mode
-│
-├── MPU6050Handler.h        # Detectare flip cu accelerometru
-├── BuzzerHandler.h         # Melodii și sunete
-├── Analytics.h             # Statistici și NTP
-│
-├── IntervalTimer.h         # Timere non-blocking
-├── TimedScreenManager.h    # Manager pentru overlay-uri temporare
-│
-├── build_webcontent.py     # Script Python pentru compilare web
-│
-└── data/                   # Fișiere web (sursă)
-    ├── index.html          # Structura paginii
-    ├── style.css           # Stiluri (mobile-first)
-    └── app.js              # Logica JavaScript + WebSocket
-```
+### Prerequisites
 
-### Arhitectura Event-Driven
+- Arduino IDE 2.0+ or PlatformIO
+- ESP32 Board Package installed
+- Required libraries: U8g2, WebSockets, ArduinoJson, QRCode
 
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Sensors   │────▶│ EventQueue  │────▶│   Handler   │
-│ MPU, LDR    │     │  (FIFO)     │     │  (loop())   │
-└─────────────┘     └─────────────┘     └─────────────┘
-                           ▲
-                           │
-                    ┌──────┴──────┐
-                    │  WebSocket  │
-                    │  (Core 0)   │
-                    └─────────────┘
-```
+### Setup Steps
 
----
-
-## 🚀 Instalare și Configurare
-
-### Cerințe
-- [Arduino IDE](https://www.arduino.cc/en/software) 2.0+ sau [PlatformIO](https://platformio.org/)
-- ESP32 Board Package
-- Biblioteci necesare (se instalează automat):
-  - `U8g2` - Display OLED
-  - `WebSockets` - Comunicare WebSocket
-  - `ArduinoJson` - Parsare JSON
-  - `qrcode` - Generare QR code
-
-### Pași de Instalare
-
-1. **Clonează repository-ul**
+1. Clone the repository:
    ```bash
    git clone https://github.com/ale0204/FinalProject.git
-   cd FinalProject
+   cd FinalProject/src
    ```
 
-2. **Configurează WiFi** - editează `config.h`:
+2. Configure WiFi credentials in `config.h`:
    ```cpp
-   #define WIFI_SSID "NumeleReteleiTale"
-   #define WIFI_PASSWORD "ParolaTa"
+   #define WIFI_SSID "YourNetworkName"
+   #define WIFI_PASSWORD "YourPassword"
    ```
 
-3. **Generează WebContent.h** (dacă modifici fișierele din `data/`):
+3. If modifying web files, regenerate WebContent.h:
    ```bash
    python build_webcontent.py
    ```
 
-4. **Încarcă pe ESP32**:
-   - Selectează Board: `ESP32 Dev Module`
-   - Selectează Port: `COMx` (Windows) sau `/dev/ttyUSBx` (Linux)
-   - Click Upload
+4. Upload to ESP32:
+   - Board: ESP32 Dev Module
+   - Port: Appropriate COM port
+   - Upload Speed: 921600
 
-5. **Găsește IP-ul**:
-   - Deschide Serial Monitor (115200 baud)
-   - Vei vedea: `Access web interface at: http://192.168.x.x`
-
----
-
-## 🎯 Utilizare
-
-### Prima Pornire
-1. ESP32-ul încearcă să se conecteze la WiFi-ul configurat
-2. Dacă reușește, afișează IP-ul pe OLED și în Serial
-3. Dacă nu, creează Access Point "ProductivityBloom" cu QR code
-
-### Flux de Lucru Tipic
-
-1. **Accesează interfața web** de pe telefon/PC
-2. **Adaugă task-uri** cu numele și durata dorită
-3. **Selectează un task** din listă
-4. **Întoarce cubul** (OLED în jos) pentru a porni timer-ul
-5. **Concentrează-te** până auzi beep-urile de countdown
-6. **Întoarce cubul înapoi** când termini sau vrei pauză
-7. **Marchează task-ul complet** (✓) sau continuă (✗)
-
-### Control prin Flip
-| Poziție Cub | Acțiune |
-|-------------|---------|
-| OLED în sus | Idle / Pauză |
-| OLED în jos | Focus mode (timer merge) |
-
-### Revive Plantă
-Când planta e ofilită:
-1. Expune senzorul LDR la lumină puternică
-2. Ține 3 secunde
-3. Planta revine la stadiul Seed
+5. Find the device IP:
+   - Open Serial Monitor at 115200 baud
+   - Look for: "Access web interface at: http://192.168.x.x"
 
 ---
 
-## 📡 API Documentation
+## Usage Guide
+
+### Initial Setup
+
+1. Power on the device
+2. ESP32 attempts WiFi connection (configured network)
+3. If successful: IP address shown on OLED and Serial
+4. If failed: Creates "ProductivityBloom" access point with QR code
+
+### Basic Workflow
+
+1. Access web interface from phone or computer
+2. Add tasks with name and duration
+3. Select a task from the list
+4. Flip cube (OLED facing down) to start timer
+5. Focus until countdown beeps
+6. Flip cube back when finished
+7. Mark task complete or continue
+
+### Cube Orientation Reference
+
+| Cube Position | System Action |
+|---------------|---------------|
+| OLED visible (up) | Idle / Paused state |
+| OLED hidden (down) | Focus mode active |
+
+### Plant Revival
+
+When plant is withered:
+1. Expose LDR sensor to bright light
+2. Maintain exposure for 3 seconds
+3. Plant revives to Seed stage
+
+---
+
+## API Reference
 
 ### REST Endpoints
 
-| Endpoint | Metodă | Descriere |
-|----------|--------|-----------|
-| `/` | GET | Pagina web principală |
-| `/api/status` | GET | Stare curentă (mode, timer, plant) |
-| `/api/tasks` | GET | Lista task-urilor |
-| `/api/tasks` | POST | Adaugă task nou |
-| `/api/plant` | GET | Starea plantei |
-| `/api/analytics` | GET | Statistici zilnice |
-| `/api/action` | POST | Acțiuni: start, pause, resume, complete, skip, kill |
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Main web interface |
+| `/api/status` | GET | Current system state |
+| `/api/tasks` | GET | Task list |
+| `/api/tasks` | POST | Add new task |
+| `/api/plant` | GET | Plant state |
+| `/api/analytics` | GET | Statistics |
+| `/api/action` | POST | Control actions |
 
-### WebSocket Events
+### WebSocket Protocol
 
-**Server → Client:**
-```javascript
-{ "type": "status", "mode": "focusing", "timeLeft": 1423, "totalTime": 1500 }
-{ "type": "plant", "stage": 2, "isWithered": false, "wateredCount": 3 }
-{ "type": "tasks", "tasks": [...] }
-{ "type": "flipConfirm" }  // Arată modal de confirmare
-{ "type": "flipResumed" }  // Timer-ul a fost reluat
-{ "type": "revive" }       // Planta a fost reînviată
+Connection: `ws://[device-ip]:81`
+
+Server-to-Client Messages:
+```json
+{"type": "status", "mode": "focusing", "timeLeft": 1423, "totalTime": 1500}
+{"type": "plant", "stage": 2, "isWithered": false, "wateredCount": 3}
+{"type": "tasks", "tasks": [...]}
+{"type": "flipConfirm"}
+{"type": "flipResumed"}
+{"type": "revive"}
 ```
 
-**Client → Server:**
-```javascript
-{ "action": "addTask", "task": { "name": "Study", "focusDuration": 25, "breakDuration": 5 } }
-{ "action": "startTask", "taskId": 123456 }
-{ "action": "confirmComplete" }
-{ "action": "confirmAccidental" }
+Client-to-Server Messages:
+```json
+{"action": "addTask", "task": {"name": "Study", "focusDuration": 25, "breakDuration": 5}}
+{"action": "startTask", "taskId": 123456}
+{"action": "confirmComplete"}
+{"action": "confirmAccidental"}
 ```
 
 ---
 
-## 🙏 Credite
+## Technical Challenges
 
-Proiect realizat pentru cursul de **Robotică** - Facultatea de Automatică și Calculatoare, Anul 3.
+### 1. Real-time Synchronization
 
-### Biblioteci Utilizate
-- [U8g2](https://github.com/olikraus/u8g2) - Display OLED
-- [arduinoWebSockets](https://github.com/Links2004/arduinoWebSockets) - WebSocket
-- [ArduinoJson](https://arduinojson.org/) - JSON parsing
-- [QRCode](https://github.com/ricmoo/QRCode) - QR code generation
+Maintaining consistency between the physical device and multiple web clients required careful engineering:
+
+- WebSocket broadcasts ensure all clients receive updates simultaneously
+- Race conditions between Core 0 (network) and Core 1 (logic) required mutex locks
+- Event queue decouples sensor inputs from state processing
+
+### 2. ESP32 WiFi Stability
+
+The ESP32's WiFi stack presented several challenges:
+
+- Memory fragmentation after prolonged operation required static buffer allocation
+- Dual-core access to WiFi resources needed careful synchronization
+- Fallback to Access Point mode required complete network stack reconfiguration
+
+### 3. Physical Integration
+
+Building a functional cube with all components presented non-software challenges:
+
+- Weight distribution: Batteries (heaviest) centered for stable flip detection
+- Wire management: Minimal wire lengths to fit within enclosure
+- Component mounting: Combination of adhesive and 3D-printed brackets
+- Access ports: USB charging port positioning for practical use
+
+### 4. Display Rotation at Runtime
+
+The SSD1327 OLED controller has limited runtime rotation support:
+
+- `setDisplayRotation()` unreliable after initialization
+- Solution: Rotation set in U8G2 constructor, changed on flip detection
+- Requires full buffer redraw after orientation change
+
+### 5. Accurate Time Tracking
+
+Focus session timing needed to survive pauses and interruptions:
+
+- Accumulated time tracking across pause/resume cycles
+- Proper rounding rules (30+ seconds rounds up to next minute)
+- NTP synchronization for midnight detection
+- Timezone handling for Romanian locale
 
 ---
 
-## 📄 Licență
+## Design Questions
 
-MIT License - folosește liber acest proiect!
+### Q1: What is the system boundary?
+
+The system boundary encompasses the physical cube device and its self-hosted web interface. The ESP32 acts as both the embedded controller and a web server, creating a self-contained system that requires no external servers or cloud services for core functionality.
+
+External dependencies cross the boundary only for:
+- NTP time synchronization (optional, graceful degradation)
+- Initial WiFi network connection
+- Web browser on user's device for interface access
+
+The boundary explicitly excludes:
+- Cloud storage or processing
+- External APIs or services
+- Database servers
+- Authentication services
+
+This design choice ensures the system remains functional in offline environments and eliminates privacy concerns about productivity data leaving the local network.
+
+### Q2: Where does intelligence live?
+
+Intelligence is distributed across three layers:
+
+**Embedded Layer (ESP32)**: Contains the core decision-making logic:
+- Timer state machine management
+- Flip gesture interpretation with debouncing
+- Plant growth algorithm based on task completion
+- Midnight goal evaluation and plant withering logic
+- Light sensor threshold detection for revival
+
+**Protocol Layer (WebSocket/HTTP)**: Provides the communication intelligence:
+- Real-time state synchronization
+- Conflict resolution for concurrent actions
+- Graceful reconnection handling
+
+**Client Layer (JavaScript)**: Handles presentation intelligence:
+- UI state management and animations
+- Optimistic updates with server reconciliation
+- Offline detection and queuing
+
+The critical intelligence (what determines plant state, timer behavior, goal evaluation) resides entirely on the ESP32, ensuring the system behaves correctly even if the web interface is unavailable.
+
+### Q3: What is the hardest technical problem?
+
+The hardest technical problem was achieving reliable bidirectional real-time synchronization between the ESP32 and multiple web clients while maintaining responsive physical interactions.
+
+Specific challenges included:
+
+1. **Dual-core Race Conditions**: The WebSocket server runs on Core 0 while the main loop runs on Core 1. Shared state (tasks, timers, plant) required mutex protection without blocking the time-critical timer updates.
+
+2. **State Consistency**: When a user flips the cube, the state change must propagate to all connected web clients within 100ms to feel responsive. Simultaneously, web-initiated actions must immediately reflect on the OLED.
+
+3. **Memory Constraints**: WebSocket connections consume significant heap memory. With multiple clients and the JSON serialization overhead, heap fragmentation became a stability issue requiring static buffer allocation.
+
+4. **Timing Accuracy**: Focus sessions must be accurately timed even through pause/resume cycles, WiFi reconnections, and NTP synchronization events.
+
+The solution involved an event-driven architecture with a thread-safe queue, careful memory management, and a clear separation between state mutation (single point of truth in SystemState) and state broadcasting (triggered by events).
+
+### Q4: What is the minimum demo?
+
+The minimum viable demo consists of:
+
+1. **Hardware**: ESP32 + OLED display + MPU-6050 accelerometer (3 components minimum)
+2. **Software**: Basic timer with flip detection, simple plant visualization
+3. **Interface**: Serial monitor output (no web interface required)
+
+Demo flow (60 seconds):
+1. Power on, show plant on OLED (5 sec)
+2. Flip cube to start 30-second focus timer (show countdown)
+3. Timer completes, plant grows one stage
+4. Flip again, timer starts again
+5. Complete to show plant bloom
+
+This demonstrates the core value proposition: physical interaction controlling a timer with visual gamification feedback. The web interface, WiFi, NTP, persistence, and audio are enhancements that can be incrementally added.
+
+### Q5: Why is this not just a tutorial project?
+
+This project extends beyond tutorial-level complexity in several dimensions:
+
+**Architectural Complexity**: 
+- Dual-core concurrent execution with proper synchronization
+- Event-driven architecture with decoupled components
+- Multiple communication protocols (SPI, I2C, WiFi, WebSocket)
+
+**Integration Depth**:
+- 6 distinct hardware components working in coordination
+- Physical form factor constraints driving software decisions
+- Power management for battery operation
+
+**Real-world Considerations**:
+- Persistent storage across power cycles
+- Graceful degradation when WiFi unavailable
+- Timezone-aware time handling
+- State machine with complex transitions (idle/focusing/paused/break/withered)
+
+**Production Qualities**:
+- Mobile-responsive web interface
+- Error handling and recovery mechanisms
+- Debug output for troubleshooting
+- Configuration management
+
+**Novel Interaction Design**:
+- Flip-based input paradigm (not commonly covered in tutorials)
+- Gamification layer with goal tracking
+- Multi-modal feedback (visual, audio, haptic through physical manipulation)
+
+Tutorial projects typically demonstrate a single concept (e.g., "ESP32 web server" or "MPU6050 orientation"). This project integrates multiple concepts into a cohesive product that solves a real problem (focus management) with a novel interaction model (physical cube manipulation).
 
 ---
 
-**Made with 💚 and lots of ☕**
+## Credits
+
+Project developed for the Robotics course at the Faculty of Automatic Control and Computers, Year 3.
+
+### Libraries Used
+
+- U8g2 - OLED display driver
+- arduinoWebSockets - WebSocket implementation
+- ArduinoJson - JSON serialization
+- QRCode - QR code generation

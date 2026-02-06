@@ -1,0 +1,19 @@
+# Build files
+.pio/
+.vscode/
+build/
+
+# IDE
+*.swp
+*.swo
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup folder
+backup_single_core/
+
+# Claude AI folder
+.claude/

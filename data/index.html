@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Productivity Bloom</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">PB</span>
+                <h1>Productivity Bloom</h1>
+            </div>
+            <div class="connection-status" id="connectionStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">Conectare...</span>
+            </div>
+        </header>
+
+        <!-- Status Card -->
+        <section class="card status-card">
+            <div class="status-display">
+                <div class="status-info centered">
+                    <span class="status-label" id="statusLabel">IDLE</span>
+                    <span class="current-task" id="currentTask">Niciun task activ</span>
+                </div>
+            </div>
+            <div class="timer-display" id="timerDisplay">
+                <span class="timer-value" id="timerValue">00:00</span>
+                <div class="timer-progress">
+                    <div class="timer-bar" id="timerBar"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Plant Section -->
+        <section class="card plant-card">
+            <h2>Planta Ta</h2>
+            <div class="plant-display">
+                <div class="plant-visual" id="plantVisual">
+                    <div class="plant-stage" id="plantStage"></div>
+                    <div class="plant-pot"></div>
+                </div>
+                <div class="plant-info">
+                    <div class="plant-stage-text">
+                        Stadiu: <span id="plantStageText">Samanta</span>
+                        <span class="stage-number" id="stageNumber">(0/0)</span>
+                    </div>
+                    <div class="plant-health" id="plantHealth">
+                        <span class="health-icon"></span>
+                        <span class="health-text">Sanatoasa</span>
+                    </div>
+                    <div class="water-hint" id="waterHint">
+                        <small>Completeaza un task pentru a putea uda planta</small>
+                    </div>
+                </div>
+            </div>
+            <div class="plant-actions">
+                <button class="btn btn-water" id="btnWater" disabled>
+                    <span class="btn-icon"></span>
+                    <span class="btn-text">Uda Planta</span>
+                </button>
+                <button class="btn btn-danger" id="btnKill">
+                    <span class="btn-icon"></span>
+                    <span class="btn-text">Demo Kill</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Task Manager -->
+        <section class="card task-card">
+            <h2>Task Manager</h2>
+            
+            <!-- Daily Goal Section -->
+            <div class="goal-section" id="goalSection">
+                <div class="goal-setter">
+                    <label for="dailyGoalInput">Obiectiv zilnic:</label>
+                    <div class="goal-input-row">
+                        <input type="number" id="dailyGoalInput" value="3" min="1" max="20" placeholder="Nr. task-uri">
+                        <button class="btn btn-success btn-sm" id="btnSetGoal">Seteaza</button>
+                    </div>
+                </div>
+                <div class="goal-display" id="goalDisplay"></div>
+            </div>
+            
+            <!-- Add Task Form -->
+            <div class="task-form">
+                <div class="form-group">
+                    <label for="taskName">Nume Task</label>
+                    <input type="text" id="taskName" placeholder="ex: Invata pentru examen" maxlength="30">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="focusTime">Focus (min)</label>
+                        <input type="number" id="focusTime" value="25" min="1" max="120">
+                    </div>
+                    <div class="form-group">
+                        <label for="breakTime">Pauza (min)</label>
+                        <input type="number" id="breakTime" value="5" min="1" max="30">
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-full" id="btnAddTask">
+                    <span class="btn-icon">+</span>
+                    <span class="btn-text">Adauga Task</span>
+                </button>
+            </div>
+
+            <!-- Task List -->
+            <div class="task-list" id="taskList">
+                <div class="task-list-header">
+                    <span>Task-uri pentru azi</span>
+                    <span class="task-count" id="taskCount">0 task-uri</span>
+                </div>
+                <div class="task-items" id="taskItems">
+                    <div class="empty-state" id="emptyState">
+                        <span class="empty-icon">--</span>
+                        <span class="empty-text">Niciun task adaugat</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Statistics -->
+        <section class="card stats-card">
+            <h2>Statistici Azi</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-value" id="tasksCompleted">0</span>
+                    <span class="stat-label">Completate</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="tasksTotal">0</span>
+                    <span class="stat-label">Total</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="focusTotal">0</span>
+                    <span class="stat-label">Min Focus</span>
+                </div>
+            </div>
+            <div class="progress-section">
+                <div class="progress-header">
+                    <span>Progres zilnic</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+            <div class="time-info">
+                <span class="clock-icon">Ora:</span>
+                <span id="currentTime">--:--</span>
+                <button class="btn btn-sm btn-secondary" id="btnSyncTime" title="Sincronizeaza ora de pe telefon">Sync</button>
+            </div>
+            <div class="stats-actions">
+                <button class="btn btn-danger btn-sm" id="btnResetDay">Reset Ziua</button>
+            </div>
+        </section>
+
+        <!-- Weekly Statistics -->
+        <section class="card weekly-card">
+            <h2>Statistici Saptamanale</h2>
+            <div class="weekly-stats" id="weeklyStats">
+                <div class="weekly-summary">
+                    <div class="stat-item">
+                        <span class="stat-value" id="weeklyTasks">0</span>
+                        <span class="stat-label">Task-uri</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="weeklyFocus">0</span>
+                        <span class="stat-label">Min Focus</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="weeklyAvg">0</span>
+                        <span class="stat-label">Media/zi</span>
+                    </div>
+                </div>
+                <div class="weekly-chart" id="weeklyChart"></div>
+                <div class="weekly-best" id="weeklyBest">
+                    <small>Cea mai productiva zi: <span id="bestDay">-</span></small>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <span>Productivity Bloom v1.0</span>
+            <span id="espIP">ESP32</span>
+        </footer>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span class="toast-icon" id="toastIcon"></span>
+        <span class="toast-message" id="toastMessage">Mesaj</span>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-icon" id="modalIcon">!</div>
+            <h3 id="modalTitle">Confirmare</h3>
+            <p id="modalMessage">Esti sigur?</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="modalCancel">Anuleaza</button>
+                <button class="btn btn-danger" id="modalConfirm">Confirma</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

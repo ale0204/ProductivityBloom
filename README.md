@@ -81,7 +81,7 @@ The system maintains state across power cycles using the ESP32's Non-Volatile St
 ### Bill of Materials
 
 | Component | Quantity | Specifications | Purpose |
-|-----------|----------|----------------|---------|
+|-----------|----------|----------------|---------||
 | ESP32 WROOM-32 | 1 | DevKit V1, 38 pins | Main microcontroller |
 | OLED Display | 1 | Waveshare 1.5", SSD1327, 128x128, SPI | Visual output |
 | MPU-6050 | 1 | 6-DOF Accelerometer/Gyroscope, I2C | Flip detection |
@@ -92,16 +92,22 @@ The system maintains state across power cycles using the ESP32's Non-Volatile St
 | Li-Ion 18650 Battery | 2 | 3.7V, 2000-3000mAh each | Power supply |
 | Battery Holder | 1 | 2-slot, parallel configuration | Battery mounting |
 | TP4056 Module | 1 | With protection circuit | Battery charging |
+| Boost Converter | 1 | MT3608 or similar, adjustable output | Step-up to 5V |
+| Capacitors | As needed | 100uF, 10uF, 0.1uF | Filtering for regulator, ESP32, OLED |
 | Enclosure | 1 | Cube form factor, approx. 10cm | Housing |
-| Dupont Wires | ~20 | Male-Female and Male-Male | Connections |
+| Dupont Wires | As needed | Male-Female and Male-Male | Connections |
 
 ### Power Configuration
 
-The system uses two 18650 Li-Ion batteries connected in parallel:
-- Output Voltage: 3.7V nominal (compatible with ESP32 VIN)
+The system uses two 18650 Li-Ion batteries connected in parallel, with a boost converter to provide stable 5V:
+
+- Battery Output: 3.7V nominal (3.0V-4.2V range)
+- Boost Converter: Steps up to 5V for ESP32 VIN
 - Combined Capacity: 4000-6000mAh
 - Runtime: Approximately 8-12 hours continuous operation
 - Charging: Via TP4056 module with micro-USB input
+
+The boost converter output was calibrated to exactly 5V using a separate adjustable power supply module with LCD display for precision voltage measurement during the tuning process.
 
 ---
 
@@ -139,11 +145,14 @@ Piezo Buzzer:
   GND                --> Buzzer (-)
 
 Power:
-  Battery Pack (+) --> TP4056 B+ --> ESP32 VIN
-  Battery Pack (-) --> TP4056 B- --> ESP32 GND
+  Battery Pack (+) --> TP4056 B+ --> Boost IN+ --> Boost OUT+ (5V) --> ESP32 VIN
+  Battery Pack (-) --> TP4056 B- --> Boost IN- --> Boost OUT-      --> ESP32 GND
+  
+  Note: Boost converter adjusted to 5V output using external 
+        regulated power supply with display for calibration
 ```
 
-### Battery Parallel Configuration
+### Battery and Power Regulation
 
 ```
   +--------+     +--------+
@@ -152,13 +161,20 @@ Power:
   +---+----+     +----+---+
       |    (+)       |
       +------+-------+
-             |
+             | 3.7V
              v
       +------+------+
       |   TP4056    |
       |  Charger    |
       +------+------+
-             |
+             | 3.7V
+             v
+      +------+------+
+      |    Boost    |
+      |  Converter  |
+      |  (set 5V)   |
+      +------+------+
+             | 5V
              v
       +------+------+
       |  ESP32 VIN  |

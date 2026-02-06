@@ -81,7 +81,7 @@ The system maintains state across power cycles using the ESP32's Non-Volatile St
 ### Bill of Materials
 
 | Component | Quantity | Specifications | Purpose |
-|-----------|----------|----------------|---------||
+|-----------|----------|----------------|---------|
 | ESP32 WROOM-32 | 1 | DevKit V1, 38 pins | Main microcontroller |
 | OLED Display | 1 | Waveshare 1.5", SSD1327, 128x128, SPI | Visual output |
 | MPU-6050 | 1 | 6-DOF Accelerometer/Gyroscope, I2C | Flip detection |

@@ -2,7 +2,7 @@
 
 ## A Smart Embedded System for Focus Session Management
 
-Productivity Bloom is a physical smart cube built around an ESP32 microcontroller that transforms focus sessions into an interactive, gamified experience. The system combines hardware sensors (accelerometer, light sensor), a grayscale OLED display, audio feedback, and a real-time web interface to create a tangible productivity tool that responds to physical gestures.
+Productivity Bloom is a physical cube built around an ESP32 microcontroller that transforms focus sessions into an interactive, gamified experience. The system combines hardware sensors (accelerometer, light sensor), a grayscale OLED display, audio feedback, and a real-time web interface to create a tangible productivity tool that responds to physical gestures.
 
 Unlike traditional software-based Pomodoro timers, this project embodies the concept of "calm technology" - technology that exists in the physical world, requires minimal attention, and provides ambient feedback. The user interacts with the system by physically flipping the cube to start/stop focus sessions, while a virtual plant grows on the display as tasks are completed, creating an emotional connection to productivity habits.
 
@@ -470,12 +470,12 @@ The minimum viable demo consists of:
 2. **Software**: Basic timer with flip detection, simple plant visualization
 3. **Interface**: Serial monitor output (no web interface required)
 
-Demo flow (60 seconds):
+Demo flow (2 minutes):
 1. Power on, show plant on OLED (5 sec)
-2. Flip cube to start 30-second focus timer (show countdown)
-3. Timer completes, plant grows one stage
-4. Flip again, timer starts again
-5. Complete to show plant bloom
+2. Flip cube to start 1 minute focus timer (show countdown)
+3. Flip back and confirm you finished the task, so you can "water" your plant
+4. Press the button to water it, and watch it grow
+5. Press the button Demo Kill to demonstrate the withered state and how to revive it using light
 
 This demonstrates the core value proposition: physical interaction controlling a timer with visual gamification feedback. The web interface, WiFi, NTP, persistence, and audio are enhancements that can be incrementally added.
 
@@ -513,10 +513,6 @@ This project extends beyond tutorial-level complexity in several dimensions:
 Tutorial projects typically demonstrate a single concept (e.g., "ESP32 web server" or "MPU6050 orientation"). This project integrates multiple concepts into a cohesive product that solves a real problem (focus management) with a novel interaction model (physical cube manipulation).
 
 ---
-
-## Credits
-
-Project developed for the Robotics course at the Faculty of Automatic Control and Computers, Year 3.
 
 ### Libraries Used
 

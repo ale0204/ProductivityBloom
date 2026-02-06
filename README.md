@@ -188,7 +188,7 @@ Power:
 ### Project Structure
 
 ```
-FinalProject/
+ProductivityBloom/
 |-- README.md
 |-- src/
     |-- finall.ino              # Main entry point
@@ -259,8 +259,8 @@ Events include: TIMER_TICK, STATE_CHANGED, PLANT_WATERED, PLANT_BLOOMED, PLANT_W
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/ale0204/FinalProject.git
-   cd FinalProject/src
+   git clone https://github.com/ale0204/ProductivityBloom.git
+   cd ProductivityBloom/src
    ```
 
 2. Configure WiFi credentials in `config.h`:

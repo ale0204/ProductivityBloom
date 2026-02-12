@@ -1,8 +1,5 @@
 /**
  * BuzzerHandler.h
- * Melodii și sunete pentru Piezo Buzzer pasiv
- * 
- * Conexiuni:
  * GPIO25 ──[ 220Ω ]── Piezo ── GND
  */
 

@@ -10,18 +10,33 @@ The system operates as a standalone embedded device with its own web server, eli
 
 ---
 
+## Project Images
+
+### Exterior View
+The finished project in its cube enclosure, showing the OLED display and clean exterior design.
+
+![Exterior View](pictures/project.png)
+
+### Interior Wiring
+Internal wiring setup showing all components: ESP32, MPU-6050 accelerometer, OLED display connections, LDR sensor, buzzer, and power management circuit.
+
+![Interior Wiring](pictures/wiring_setup.png)
+
+---
+
 ## Table of Contents
 
-1. [System Overview](#system-overview)
-2. [Features](#features)
-3. [Hardware Components](#hardware-components)
-4. [Electrical Schematic](#electrical-schematic)
-5. [Software Architecture](#software-architecture)
-6. [Installation](#installation)
-7. [Usage Guide](#usage-guide)
-8. [API Reference](#api-reference)
-9. [Technical Challenges](#technical-challenges)
-10. [Design Questions](#design-questions)
+1. [Project Images](#project-images)
+2. [System Overview](#system-overview)
+3. [Features](#features)
+4. [Hardware Components](#hardware-components)
+5. [Electrical Schematic](#electrical-schematic)
+6. [Software Architecture](#software-architecture)
+7. [Installation](#installation)
+8. [Usage Guide](#usage-guide)
+9. [API Reference](#api-reference)
+10. [Technical Challenges](#technical-challenges)
+11. [Design Questions](#design-questions)
 
 ---
 

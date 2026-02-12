@@ -4,8 +4,8 @@
 // ============================================
 // WiFi Configuration
 // ============================================
-#define WIFI_SSID "DIGI-Dg9Y"
-#define WIFI_PASSWORD "XFrgeUPa3P"
+#define WIFI_SSID "Iphone - Alexandra"
+#define WIFI_PASSWORD "12345ale"
 
 // Access Point fallback (if WiFi fails)
 #define AP_SSID "ProductivityBloom"
